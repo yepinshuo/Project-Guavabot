@@ -6,7 +6,8 @@ def solve(client):
     client.end()
     client.start()
 
-    mst=nx.minimum_spanning_tree(client.G)
+    # initialize some useful sets and lists
+    mst = nx.minimum_spanning_tree(client.G)
     pathLength = {}
     for vertex in mst.nodes:
         currLen = nx.shortest_path_length(mst,client.h,vertex)
@@ -14,26 +15,33 @@ def solve(client):
     all_students = list(range(1, client.students + 1))
     non_home = list(range(1, client.home)) + list(range(client.home + 1, client.v + 1))
     
-    
-    ScoutResults = {}
 
 	# Setting initial scout results to false for all vertices
-    # Scout all students, making it true to scout results if greater than 0.5
+    # Scout all students, making it true to scout results if greater than 0.4
+
+    ScoutResults = {}
+
     for vertex in non_home:
-    	trueNum = 0
-    	report = client.scout(vertex, all_students)
-    	for i in report.values():
-    		if i:
-    			trueNum += 1
-    	if trueNum/len(report) >= 0.4:
-    		ScoutResults[vertex] = True
-    	else:
-    		ScoutResults[vertex] = False
+        trueNum = 0
+        report = client.scout(vertex, all_students)
+        for i in report.values():
+            if i:
+                trueNum += 1
+        if trueNum/len(report) >= 0.4:
+            ScoutResults[vertex] = True
+        else:
+            ScoutResults[vertex] = False
 
     # remote the bot that the majority of the students scout TRUE.
     for vertex in non_home:
         if ScoutResults[vertex]:
             remoteBot(client, client.graph, vertex, pathLength)
+
+    # remote rest of the nodes if not all bots is found. 
+    if not knownBotsEqualToTotal(client):
+        for vertex in non_home:
+            if not ScoutResults[vertex]:
+                remoteBot(client, client.graph, vertex, pathLength)
 
     print(client.l)
     print(client.bot_locations)
@@ -49,7 +57,7 @@ def solve(client):
 
 # return if the total number of known bots is equal to the total bots.
 def knownBotsEqualToTotal(client):
-	return len(client.bot_locations()) == client.l
+	return len(client.bot_locations) == client.l
 
 # find the bot which has the largest distance to home vertex h.
 def findFurthestBot(client, mst, pathLength):
