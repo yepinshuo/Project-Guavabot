@@ -40,8 +40,6 @@ def solve(client):
    			for u, v in list(client.graph.edges()):
    				if u == vertex:
    					num = client.remote(u, v)
-   				if v == vertex:
-   					num = client.remote(v, u)
    					break;
 
 #    for _ in range(100):
@@ -49,3 +47,14 @@ def solve(client):
 #        client.remote(u, v)
 
     client.end()
+
+# return the total number of known bots that
+def knownBotsEqualToTotal(client):
+	return len(client.bot_locations()) == client.l
+
+
+
+
+
+
+
