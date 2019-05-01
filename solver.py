@@ -42,9 +42,11 @@ def solve(client):
    					num = client.remote(u, v)
    					break;
 
+
 #    for _ in range(100):
 #        u, v = random.choice(list(client.G.edges()))
 #        client.remote(u, v)
+	
 
     client.end()
 
@@ -52,6 +54,29 @@ def solve(client):
 def knownBotsEqualToTotal(client):
 	return len(client.bot_locations()) == client.l
 
+
+def findFurthestBot(client):
+	mst=nx.minimum_spanning_tree(client.G)
+	pathLength = {}
+	# unique vertex indices of all bot 
+	bot_loc = set(client.bot_locations)
+	max_Len = 0
+	max_bot = None
+	for vertex in mst.nodes:
+		currLen = nx.shortest_path_length(mst,client.h,vertex)
+		pathLength[vertex] = currLen
+		if vertex in bot_loc & currLen > max_Len:
+			max_Len = currLen
+			max_bot = vertex
+	return max_bot
+
+
+
+
+
+
+
+	
 
 
 
