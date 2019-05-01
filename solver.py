@@ -20,6 +20,8 @@ def solve(client):
 
 	# Setting initial scout results to false for all vertices
     # Scout all students, making it true to scout results if greater than 0.5
+    
+    
     for vertex in non_home:
     	trueNum = 0
     	report = client.scout(vertex, all_students)
@@ -30,25 +32,13 @@ def solve(client):
     		ScoutResults[vertex] = True
     	else:
     		ScoutResults[vertex] = False
-    
-#    for vertex in non_home:
-#   	if ScoutResults[vertex]:
-#    		num = clinet.remote(vertex, )
 
-    for vertex in non_home:
-    	if ScoutResults[vertex]:
-   			for u, v in list(client.graph.edges()):
-   				if u == vertex:
-   					num = client.remote(u, v)
-   					break;
 
-#    for _ in range(100):
-#        u, v = random.choice(list(client.G.edges()))
-#        client.remote(u, v)
+
 
     client.end()
 
-# return the total number of known bots that
+# return if the total number of known bots is equal to the total bots.
 def knownBotsEqualToTotal(client):
 	return len(client.bot_locations()) == client.l
 
