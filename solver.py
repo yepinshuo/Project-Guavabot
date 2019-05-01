@@ -41,12 +41,12 @@ def solve(client):
     for vertex in non_home:
         if ScoutResults[vertex]:
             remoteBot(client, mst, vertex, pathLength)
-    print(1)
 
    	#while client.bot_count[client.h] != client.l:
     while i in range(10):
-   		furBot = findFurthestBot(client,mst,pathLength)
-   		remoteBot(client,mst,furBot,pathLength)
+        furBot = findFurthestBot(client,mst,pathLength)
+        print(furBot)
+        remoteBot(client,mst,furBot,pathLength)
 
     client.end()
 
@@ -57,8 +57,7 @@ def knownBotsEqualToTotal(client):
 
 def findFurthestBot(client, mst, pathLength):
     # unique vertex indices of all bot 
-    print(client.bot_locations)
-    bot_loc = set(client.bot_locations())
+    bot_loc = set(client.bot_locations)
     max_Len = 0
     max_bot = None
     for vertex in mst.nodes:
@@ -69,10 +68,9 @@ def findFurthestBot(client, mst, pathLength):
 
 def remoteBot(client, mst, bot, pathLength):
     neighbors = mst.neighbors(bot)
-    minLen = 0
+    minLen = float('inf')
     minNeighbor = None
     for neighbor in neighbors:
-        print(minNeighbor)
         if minLen > pathLength[neighbor]:
             minLen = pathLength[neighbor]
             minNeighbor = neighbor
