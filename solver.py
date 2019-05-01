@@ -6,11 +6,6 @@ def solve(client):
     client.end()
     client.start()
 
-    # cant_scout    : a list of sets, each set representing the
-    #                 vertices that student i may not scout.
-    # bot_count     : a list storing the number of bots at vertex i.
-    # bot_locations : a list of vertex indices, one for each
-    #                 known bot. Generated from bot_count.
     mst=nx.minimum_spanning_tree(client.G)
     pathLength = {}
     for vertex in mst.nodes:
@@ -24,29 +19,31 @@ def solve(client):
 
 	# Setting initial scout results to false for all vertices
     # Scout all students, making it true to scout results if greater than 0.5
-    
-    
     for vertex in non_home:
     	trueNum = 0
     	report = client.scout(vertex, all_students)
     	for i in report.values():
     		if i:
     			trueNum += 1
-    	if trueNum/len(report) >= 0.5:
+    	if trueNum/len(report) >= 0.4:
     		ScoutResults[vertex] = True
     	else:
     		ScoutResults[vertex] = False
 
-
+    # remote the bot that the majority of the students scout TRUE.
     for vertex in non_home:
         if ScoutResults[vertex]:
-            remoteBot(client, mst, vertex, pathLength)
+            remoteBot(client, client.graph, vertex, pathLength)
 
-   	#while client.bot_count[client.h] != client.l:
-    while i in range(10):
-        furBot = findFurthestBot(client,mst,pathLength)
-        print(furBot)
-        remoteBot(client,mst,furBot,pathLength)
+    print(client.l)
+    print(client.bot_locations)
+    print(client.h)
+
+    while i in range(100):
+        furBot = findFurthestBot(client, mst, pathLength)
+        if furBot == None:
+            break
+        remoteBot(client, mst, furBot, pathLength)
 
     client.end()
 
@@ -54,18 +51,19 @@ def solve(client):
 def knownBotsEqualToTotal(client):
 	return len(client.bot_locations()) == client.l
 
-
+# find the bot which has the largest distance to home vertex h.
 def findFurthestBot(client, mst, pathLength):
     # unique vertex indices of all bot 
     bot_loc = set(client.bot_locations)
     max_Len = 0
     max_bot = None
-    for vertex in mst.nodes:
-        if (vertex in bot_loc) and (pathLength[vertex] > max_Len):
+    for vertex in bot_loc:
+        if (pathLength[vertex] > max_Len):
             max_Len = pathLength[vertex]
-            max_bot = vertex
+            max_bot = vertex 
     return max_bot		
 
+# remote the bot toward the direction of home vertex h.
 def remoteBot(client, mst, bot, pathLength):
     neighbors = mst.neighbors(bot)
     minLen = float('inf')
