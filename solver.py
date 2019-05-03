@@ -11,7 +11,7 @@ def solve(client):
     mst = nx.minimum_spanning_tree(client.G)
     pathLength = {}
     for vertex in mst.nodes:
-        currLen = nx.shortest_path_length(mst,client.h,vertex)
+        currLen = nx.shortest_path_length(mst, client.h, vertex) # could be mst/G
         pathLength[vertex] = currLen
     all_students = list(range(1, client.students + 1))
     non_home = list(range(1, client.home)) + list(range(client.home + 1, client.v + 1))
@@ -31,51 +31,45 @@ def solve(client):
                 trueNum += 1
         ScoutResults[vertex] = trueNum/len(report)
 
-    # remote the bot that the majority of the students scout TRUE.
-#    for vertex in non_home:
-#        if ScoutResults[vertex] >= 0.5:
-#            print("Finding bots")
-#            remoteBot(client, client.graph, vertex, pathLength)
-
     # remote rest of the nodes if not all bots is found. 
     print(client.bot_locations)
-
-    #if not knownBotsEqualToTotal(client):
-    #    for vertex in non_home:
-    #        print("Finding again")
-    #        if not ScoutResults[vertex]:
-    #            remoteBot(client, client.graph, vertex, pathLength)
 
     # Find all bot locations.
     sorted_ScoutResults = sorted(ScoutResults.items(), key=operator.itemgetter(1))
     sorted_ScoutResults.reverse()
     for vertex, prob in sorted_ScoutResults:
-        print("Finding again")
+        print(f'Finding Bots {prob}.')
         if knownBotsEqualToTotal(client):
             break
-        minProbBot = findMinProb(client, mst, vertex, ScoutResults)
-        result = client.remote(vertex, minProbBot)
-        if result > 0:
-            ScoutResults[minProbBot] = 1
-            ScoutResults[vertex] = 0
+        remoteBot(client, mst, vertex, pathLength)
+
+#        minProbBot = findMinProb(client, mst, vertex, ScoutResults)
+#        result = client.remote(vertex, minProbBot)
+#        if result > 0:
+#            ScoutResults[minProbBot] = 1
+#            ScoutResults[vertex] = 0
 
     print(client.bot_locations)
     
     while True:
         print("Returning home")
-        furBot = findFurthestBot(client, mst, pathLength)
+        furBot = findFurthestBot(client, pathLength)
         if furBot == None:
             break
         remoteBot(client, mst, furBot, pathLength)
 
     client.end()
 
+##############################################################
+## Following are some useful functions that we implemented. ##
+##############################################################
+
 # return if the total number of known bots is equal to the total bots.
 def knownBotsEqualToTotal(client):
 	return len(client.bot_locations) == client.l
 
 # find the bot which has the largest distance to home vertex h.
-def findFurthestBot(client, mst, pathLength):
+def findFurthestBot(client, pathLength):
     # unique vertex indices of all bot 
     bot_loc = set(client.bot_locations)
     max_Len = 0
@@ -87,8 +81,8 @@ def findFurthestBot(client, mst, pathLength):
     return max_bot		
 
 # remote the bot toward the direction of home vertex h.
-def remoteBot(client, mst, bot, pathLength):
-    neighbors = mst.neighbors(bot)
+def remoteBot(client, graph, bot, pathLength):
+    neighbors = graph.neighbors(bot)
     minLen = float('inf')
     minNeighbor = None
     for neighbor in neighbors:
@@ -97,8 +91,8 @@ def remoteBot(client, mst, bot, pathLength):
             minNeighbor = neighbor
     client.remote(bot, minNeighbor)
 
-def remoteBotOpposite(client, mst, bot, pathLength):
-    neighbors = mst.neighbors(bot)
+def remoteBotOpposite(client, graph, bot, pathLength):
+    neighbors = graph.neighbors(bot)
     maxLen = 0
     maxNeighbor = None
     for neighbor in neighbors:
@@ -107,15 +101,18 @@ def remoteBotOpposite(client, mst, bot, pathLength):
             maxNeighbor = neighbor
     client.remote(bot, maxNeighbor)
 		
-def findMinProb(clinet, mst, bot, ScoutResults):
-    neighbors = list(mst.neighbors(bot))
+def findMinProb(client, graph, bot, ScoutResults):
+    neighbors = list(graphv.neighbors(bot))
     minProbVertex = neighbors[0]
     for neighbor in neighbors:
         if ScoutResults[neighbor] < ScoutResults[minProbVertex]:
             minProbVertex = neighbor
     return minProbVertex
 
-
+def remoteNearBots(client):
+    homeNeighbors = list(client.graph.neighbors(client.h))
+    for neighbor in homeNeighbors:
+        client.remote(neighbor, client.h)
 
 	
 
